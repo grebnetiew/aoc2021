@@ -10,8 +10,7 @@ pub fn part1(input: &[u32]) -> usize {
 
 #[aoc(day1, part2)]
 pub fn part2(input: &[u32]) -> usize {
-    let windows: Vec<_> = input.windows(3).map(|w| w.iter().sum()).collect();
-    part1(&windows)
+    input.windows(4).filter(|w| w[3] > w[0]).count()
 }
 
 #[cfg(test)]
