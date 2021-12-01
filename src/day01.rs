@@ -27,22 +27,14 @@ pub fn part2(input: &[u32]) -> usize {
 mod tests {
     use super::*;
 
+    const TEST_INPUT: &str = "199\n200\n208\n210\n200\n207\n240\n269\n260\n263";
+
     #[test]
     fn sample1() {
-        assert_eq!(
-            part1(&one_u32_per_line(
-                "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-            )),
-            7
-        );
+        assert_eq!(part1(&one_u32_per_line(TEST_INPUT)), 7);
     }
     #[test]
     fn sample2() {
-        assert_eq!(
-            part2(&one_u32_per_line(
-                "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-            )),
-            5
-        );
+        assert_eq!(part2(&one_u32_per_line(TEST_INPUT)), 5);
     }
 }
