@@ -1,6 +1,6 @@
 #[aoc_generator(day1)]
-pub fn one_u32_per_line(input: &str) -> Vec<u32> {
-    input.lines().filter_map(|s| s.parse().ok()).collect()
+pub fn one_u32_per_line(input: &str) -> Result<Vec<u32>, std::num::ParseIntError> {
+    input.lines().map(str::parse).collect()
 }
 
 /// Returns how often two successive elements in the input increase.
@@ -31,10 +31,10 @@ mod tests {
 
     #[test]
     fn sample1() {
-        assert_eq!(part1(&one_u32_per_line(TEST_INPUT)), 7);
+        assert_eq!(part1(&one_u32_per_line(TEST_INPUT).unwrap()), 7);
     }
     #[test]
     fn sample2() {
-        assert_eq!(part2(&one_u32_per_line(TEST_INPUT)), 5);
+        assert_eq!(part2(&one_u32_per_line(TEST_INPUT).unwrap()), 5);
     }
 }
