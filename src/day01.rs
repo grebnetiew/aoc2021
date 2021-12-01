@@ -4,15 +4,12 @@ pub fn one_u32_per_line(input: &str) -> Vec<u32> {
 }
 
 #[aoc(day1, part1)]
-pub fn part1(input: &[u32]) -> u32 {
-    input
-        .windows(2)
-        .map(|w| if w[1] > w[0] { 1 } else { 0 })
-        .sum()
+pub fn part1(input: &[u32]) -> usize {
+    input.windows(2).filter(|w| w[1] > w[0]).count()
 }
 
 #[aoc(day1, part2)]
-pub fn part2(input: &[u32]) -> u32 {
+pub fn part2(input: &[u32]) -> usize {
     let windows: Vec<_> = input.windows(3).map(|w| w.iter().sum()).collect();
     part1(&windows)
 }
