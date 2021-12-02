@@ -1,54 +1,43 @@
 use std::error::Error;
 
-pub enum SubmarineInstruction {
-    Forward(u32),
-    Down(u32),
-    Up(u32),
-}
-
-#[aoc_generator(day2)]
-pub fn submarine_instructions(input: &str) -> Result<Vec<SubmarineInstruction>, Box<dyn Error>> {
-    input
-        .lines()
-        .map(|s| match s.split_once(' ') {
-            Some(("forward", n)) => Ok(SubmarineInstruction::Forward(n.parse()?)),
-            Some(("down", n)) => Ok(SubmarineInstruction::Down(n.parse()?)),
-            Some(("up", n)) => Ok(SubmarineInstruction::Up(n.parse()?)),
-            _ => Err("invalid instruction".into()),
-        })
-        .collect()
-}
-
 /// Returns where the submarine ends up after following the instructions.
 #[aoc(day2, part1)]
-pub fn part1(input: &[SubmarineInstruction]) -> u32 {
+pub fn part1(input: &str) -> Result<u32, Box<dyn Error>> {
     let (mut x, mut y) = (0, 0);
-    for ins in input {
-        match ins {
-            SubmarineInstruction::Forward(n) => x += n,
-            SubmarineInstruction::Down(n) => y += n,
-            SubmarineInstruction::Up(n) => y -= n,
+
+    for (instruction, amount) in input.lines().filter_map(|l| l.split_once(' ')) {
+        let n: u32 = amount.parse()?;
+        match instruction.chars().next() {
+            Some('f') => x += n,
+            Some('d') => y += n,
+            Some('u') => y -= n,
+            _ => return Err("invalid instruction".into()),
         }
     }
-    x * y
+
+    Ok(x * y)
 }
 
 /// Returns where the submarine ends up after following the instructions,
 /// but now, 'down' and 'up' affect the direction in which 'forward' moves.
 #[aoc(day2, part2)]
-pub fn part2(input: &[SubmarineInstruction]) -> i32 {
-    let (mut x, mut y, mut aim) = (0i32, 0i32, 0i32);
-    for ins in input {
-        match ins {
-            SubmarineInstruction::Forward(n) => {
-                x += *n as i32;
-                y += aim * *n as i32;
+pub fn part2(input: &str) -> Result<i32, Box<dyn Error>> {
+    let (mut x, mut y, mut aim) = (0, 0, 0);
+
+    for (instruction, amount) in input.lines().filter_map(|l| l.split_once(' ')) {
+        let n: i32 = amount.parse()?;
+        match instruction.chars().next() {
+            Some('f') => {
+                x += n;
+                y += aim * n;
             }
-            SubmarineInstruction::Down(n) => aim += *n as i32,
-            SubmarineInstruction::Up(n) => aim -= *n as i32,
+            Some('d') => aim += n,
+            Some('u') => aim -= n,
+            _ => return Err("invalid instruction".into()),
         }
     }
-    x * y
+
+    Ok(x * y)
 }
 
 #[cfg(test)]
@@ -59,10 +48,10 @@ mod tests {
 
     #[test]
     fn sample1() {
-        assert_eq!(part1(&submarine_instructions(TEST_INPUT).unwrap()), 150);
+        assert_eq!(part1(TEST_INPUT).unwrap(), 150);
     }
     #[test]
     fn sample2() {
-        assert_eq!(part2(&submarine_instructions(TEST_INPUT).unwrap()), 900);
+        assert_eq!(part2(TEST_INPUT).unwrap(), 900);
     }
 }
