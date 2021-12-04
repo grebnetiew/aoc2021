@@ -73,12 +73,8 @@ fn has_bingo(board: &Board) -> bool {
     for i in 0..5 {
         let (mut row, mut col) = (true, true);
         for j in 0..5 {
-            if !board[i][j].called {
-                row = false;
-            }
-            if !board[j][i].called {
-                col = false;
-            }
+            row = row && board[i][j].called;
+            col = col && board[j][i].called;
         }
         if row || col {
             return true;
@@ -90,13 +86,10 @@ fn has_bingo(board: &Board) -> bool {
 fn score(board: &Board, n: u32) -> u32 {
     board
         .iter()
-        .map(|row| {
-            row.iter()
-                .filter_map(|bn| match bn.called {
-                    true => None,
-                    false => Some(bn.val),
-                })
-                .sum::<u32>()
+        .flat_map(|row| row.iter())
+        .filter_map(|bn| match bn.called {
+            true => None,
+            false => Some(bn.val),
         })
         .sum::<u32>()
         * n
