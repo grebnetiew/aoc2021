@@ -7,7 +7,7 @@ pub fn segments(input: &str) -> Result<Vec<Vec<usize>>, std::num::ParseIntError>
         .map(|line| {
             line.split(" -> ")
                 .flat_map(|point| point.split(',').map(str::parse))
-                .collect::<Result<Vec<usize>, std::num::ParseIntError>>()
+                .collect()
         })
         .collect()
 }
