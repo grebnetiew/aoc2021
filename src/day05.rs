@@ -16,8 +16,8 @@ pub fn segments(input: &str) -> Result<Vec<Vec<usize>>, std::num::ParseIntError>
 pub fn part1(input: &[Vec<usize>]) -> usize {
     let max_xy = bounds(input);
     let mut grid = vec![vec!(0; max_xy.0 + 1); max_xy.1 + 1];
-    for line in input.iter().filter(|line| is_hor_vert(line)) {
-        update_map_with_line(&mut grid, line);
+    for segment in input.iter().filter(|segment| is_hor_vert(segment)) {
+        update_map_with_segment(&mut grid, segment);
     }
 
     count_multiply_crossed(&grid)
@@ -27,8 +27,8 @@ pub fn part1(input: &[Vec<usize>]) -> usize {
 pub fn part2(input: &[Vec<usize>]) -> usize {
     let max_xy = bounds(input);
     let mut grid = vec![vec!(0; max_xy.0 + 1); max_xy.1 + 1];
-    for line in input.iter() {
-        update_map_with_line(&mut grid, line);
+    for segment in input.iter() {
+        update_map_with_segment(&mut grid, segment);
     }
 
     count_multiply_crossed(&grid)
@@ -41,20 +41,20 @@ fn bounds(input: &[Vec<usize>]) -> (usize, usize) {
     })
 }
 
-fn is_hor_vert(line: &[usize]) -> bool {
-    line[0] == line[2] || line[1] == line[3]
+fn is_hor_vert(segment: &[usize]) -> bool {
+    segment[0] == segment[2] || segment[1] == segment[3]
 }
 
-fn update_map_with_line(grid: &mut Vec<Vec<usize>>, line: &[usize]) {
-    let (mut x, mut y) = (line[0], line[1]);
+fn update_map_with_segment(grid: &mut Vec<Vec<usize>>, segment: &[usize]) {
+    let (mut x, mut y) = (segment[0], segment[1]);
     grid[y][x] += 1;
-    while !(x == line[2] && y == line[3]) {
-        match x.cmp(&line[2]) {
+    while !(x == segment[2] && y == segment[3]) {
+        match x.cmp(&segment[2]) {
             Ordering::Greater => x -= 1,
             Ordering::Less => x += 1,
             Ordering::Equal => (),
         };
-        match y.cmp(&line[3]) {
+        match y.cmp(&segment[3]) {
             Ordering::Greater => y -= 1,
             Ordering::Less => y += 1,
             Ordering::Equal => (),
