@@ -36,7 +36,7 @@ pub fn bingo_parse(input: &str) -> Result<(Vec<u32>, Vec<Board>), Box<dyn Error>
     Ok((numbers, boards))
 }
 
-fn comma_separated_u32(input: &str) -> Result<Vec<u32>, std::num::ParseIntError> {
+pub fn comma_separated_u32(input: &str) -> Result<Vec<u32>, std::num::ParseIntError> {
     input.split(',').map(str::parse).collect()
 }
 
