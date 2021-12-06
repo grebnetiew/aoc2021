@@ -1,28 +1,27 @@
 #[aoc_generator(day6)]
 fn histogram(input: &str) -> Result<Vec<u64>, std::num::ParseIntError> {
-    let input = crate::day04::comma_separated_u32(input)?;
-    let _last = input.iter().max().unwrap_or(&0) + 1;
     let mut hist = vec![0; 9];
-    for i in input {
-        hist[i as usize] += 1;
+    for i in input.split(',').map(str::parse::<usize>) {
+        // Panic if any number is above 8 - that's not legal in day06
+        hist[i?] += 1;
     }
     Ok(hist)
 }
 
 #[aoc(day6, part1)]
 pub fn part1(input: &[u64]) -> u64 {
-    let mut input = input.to_owned();
-    lanternfish_simulate(&mut input, 80)
+    lanternfish_simulate(input, 80)
 }
 
-fn lanternfish_simulate(school: &mut Vec<u64>, steps: u64) -> u64 {
+fn lanternfish_simulate(school: &[u64], steps: u64) -> u64 {
+    let mut school = school.to_owned();
     for _ in 0..steps {
-        lanternfish_step(school);
+        lanternfish_step(&mut school);
     }
     school.iter().sum()
 }
 
-fn lanternfish_step(school: &mut Vec<u64>) {
+fn lanternfish_step(school: &mut [u64]) {
     let zeros = school[0];
     for i in 1..school.len() {
         school[i - 1] = school[i];
@@ -33,8 +32,7 @@ fn lanternfish_step(school: &mut Vec<u64>) {
 
 #[aoc(day6, part2)]
 pub fn part2(input: &[u64]) -> u64 {
-    let mut input = input.to_owned();
-    lanternfish_simulate(&mut input, 256)
+    lanternfish_simulate(input, 256)
 }
 #[cfg(test)]
 mod tests {
