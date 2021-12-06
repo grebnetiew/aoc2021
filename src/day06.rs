@@ -1,62 +1,41 @@
 #[aoc_generator(day6)]
-#[inline]
-fn comma_separated_u32(input: &str) -> Result<Vec<u32>, std::num::ParseIntError> {
-    crate::day04::comma_separated_u32(input)
+fn histogram(input: &str) -> Result<Vec<u64>, std::num::ParseIntError> {
+    let input = crate::day04::comma_separated_u32(input)?;
+    let _last = input.iter().max().unwrap_or(&0) + 1;
+    let mut hist = vec![0; 9];
+    for i in input {
+        hist[i as usize] += 1;
+    }
+    Ok(hist)
 }
 
 #[aoc(day6, part1)]
-pub fn part1(input: &[u32]) -> usize {
+pub fn part1(input: &[u64]) -> u64 {
     let mut input = input.to_owned();
     lanternfish_simulate(&mut input, 80)
 }
 
-fn lanternfish_simulate(school: &mut Vec<u32>, steps: usize) -> usize {
+fn lanternfish_simulate(school: &mut Vec<u64>, steps: u64) -> u64 {
     for _ in 0..steps {
         lanternfish_step(school);
     }
-    school.len()
+    school.iter().sum()
 }
 
-fn lanternfish_step(school: &mut Vec<u32>) {
-    let mut new_fish = 0;
-    for fish in school.iter_mut() {
-        if *fish == 0 {
-            new_fish += 1;
-            *fish = 6;
-        } else {
-            *fish -= 1;
-        }
+fn lanternfish_step(school: &mut Vec<u64>) {
+    let zeros = school[0];
+    for i in 1..school.len() {
+        school[i - 1] = school[i];
     }
-    school.append(&mut vec![8; new_fish]);
+    school[6] += zeros;
+    school[8] = zeros;
 }
 
 #[aoc(day6, part2)]
-pub fn part2(input: &[u32]) -> u64 {
-    fast_sim(input, 18)
+pub fn part2(input: &[u64]) -> u64 {
+    let mut input = input.to_owned();
+    lanternfish_simulate(&mut input, 256)
 }
-
-fn fast_sim(input: &[u32], n: usize) -> u64 {
-    let mut time = 0;
-    let mut n_fish = vec![0u64; 7];
-    let initial: u64 = input.len();
-    n_fish[0] = initial;
-
-    while time + 7 < n {
-        time += 7;
-        for i in 0..7 {
-            n_fish[(i + 2) % 7] += n_fish[i];
-        }
-        println!("> {} {:?}", time, n_fish);
-    }
-    let remaining = n - time;
-    let mut residue = 0;
-    for i in 0..remaining {
-        // For the last few steps, we take one school, simulate it
-    }
-
-    n_fish.iter().sum() + residue
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,13 +44,10 @@ mod tests {
 
     #[test]
     fn sample1() {
-        assert_eq!(part1(&comma_separated_u32(TEST_INPUT).unwrap()), 5934);
+        assert_eq!(part1(&histogram(TEST_INPUT).unwrap()), 5934);
     }
     #[test]
     fn sample2() {
-        assert_eq!(
-            part2(&comma_separated_u32(TEST_INPUT).unwrap()),
-            26984457539
-        );
+        assert_eq!(part2(&histogram(TEST_INPUT).unwrap()), 26984457539);
     }
 }
