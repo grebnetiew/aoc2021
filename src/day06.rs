@@ -8,32 +8,25 @@ fn histogram(input: &str) -> Result<Vec<u64>, std::num::ParseIntError> {
     Ok(hist)
 }
 
-#[aoc(day6, part1)]
-pub fn part1(input: &[u64]) -> u64 {
-    lanternfish_simulate(input, 80)
-}
-
 fn lanternfish_simulate(school: &[u64], steps: u64) -> u64 {
     let mut school = school.to_owned();
     for _ in 0..steps {
-        lanternfish_step(&mut school);
+        school.rotate_left(1);
+        school[6] += school[8];
     }
     school.iter().sum()
 }
 
-fn lanternfish_step(school: &mut [u64]) {
-    let zeros = school[0];
-    for i in 1..school.len() {
-        school[i - 1] = school[i];
-    }
-    school[6] += zeros;
-    school[8] = zeros;
+#[aoc(day6, part1)]
+pub fn part1(input: &[u64]) -> u64 {
+    lanternfish_simulate(input, 80)
 }
 
 #[aoc(day6, part2)]
 pub fn part2(input: &[u64]) -> u64 {
     lanternfish_simulate(input, 256)
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
