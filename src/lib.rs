@@ -1,3 +1,5 @@
+#![feature(int_abs_diff)]
+
 extern crate aoc_runner;
 
 #[macro_use]

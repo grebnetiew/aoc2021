@@ -7,12 +7,7 @@ fn comma_separated_u32(input: &str) -> Result<Vec<u32>, std::num::ParseIntError>
 #[aoc(day7, part1)]
 pub fn part1(input: &[u32]) -> u32 {
     (0..=*input.iter().max().unwrap())
-        .map(|x| {
-            input
-                .iter()
-                .map(|&y| if x > y { x - y } else { y - x })
-                .sum::<u32>()
-        })
+        .map(|x| input.iter().map(|&y| x.abs_diff(y)).sum::<u32>())
         .min()
         .unwrap()
 }
@@ -23,8 +18,8 @@ pub fn part2(input: &[u32]) -> u32 {
         .map(|x| {
             input
                 .iter()
-                .map(|&y| if x > y { x - y } else { y - x })
-                .map(|x| x * (x + 1) / 2)
+                .map(|&y| x.abs_diff(y))
+                .map(|z| z * (z + 1) / 2)
                 .sum::<u32>()
         })
         .min()
