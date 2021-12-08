@@ -73,54 +73,62 @@ fn interpret_digits(samples: Vec<u8>, prompt: Vec<u8>) -> u32 {
     }
 
     // Find 9: contains 4, included in 8, len 6
-    if let Some(s) = samples.iter().find(|&&s| {
-        !answers.contains_key(s)
-            && ones_count(s) == 6
-            && subset(answers.must_get_reverse(8), s)
-            && subset(s, answers.must_get_reverse(4))
-    }) {
-        answers.insert(*s, 9);
-    }
+    answers.insert(
+        must_find(&samples, &answers, |s| {
+            ones_count(s) == 6
+                && subset(answers.must_get_reverse(8), s)
+                && subset(s, answers.must_get_reverse(4))
+        }),
+        9,
+    );
+
     // Find 0: contains 7, included in 8, len 6
-    if let Some(s) = samples.iter().find(|&&s| {
-        !answers.contains_key(s)
-            && ones_count(s) == 6
-            && subset(answers.must_get_reverse(8), s)
-            && subset(s, answers.must_get_reverse(7))
-    }) {
-        answers.insert(*s, 0);
-    }
+    answers.insert(
+        must_find(&samples, &answers, |s| {
+            ones_count(s) == 6
+                && subset(answers.must_get_reverse(8), s)
+                && subset(s, answers.must_get_reverse(7))
+        }),
+        0,
+    );
+
     // Find 6: only remaining of len 6
-    if let Some(s) = samples
-        .iter()
-        .find(|&&s| !answers.contains_key(s) && ones_count(s) == 6)
-    {
-        answers.insert(*s, 6);
-    }
+    answers.insert(must_find(&samples, &answers, |s| ones_count(s) == 6), 6);
+
     // Find 5: included in 6
-    if let Some(s) = samples
-        .iter()
-        .find(|&&s| !answers.contains_key(s) && subset(answers.must_get_reverse(6), s))
-    {
-        answers.insert(*s, 5);
-    }
+    answers.insert(
+        must_find(&samples, &answers, |s| {
+            subset(answers.must_get_reverse(6), s)
+        }),
+        5,
+    );
+
     // Find 3: included in 9
-    if let Some(s) = samples
-        .iter()
-        .find(|&&s| !answers.contains_key(s) && subset(answers.must_get_reverse(9), s))
-    {
-        answers.insert(*s, 3);
-    }
+    answers.insert(
+        must_find(&samples, &answers, |s| {
+            subset(answers.must_get_reverse(9), s)
+        }),
+        3,
+    );
+
     // Find 2: only one left
-    if let Some(s) = samples.iter().find(|&&s| !answers.contains_key(s)) {
-        answers.insert(*s, 2);
-    }
+    answers.insert(must_find(&samples, &answers, |_| true), 2);
 
     // Use answers to fill digits
     prompt
         .iter()
         .map(|s| answers.get(*s).expect("Answers incomplete"))
         .fold(0, |acc, x| acc * 10 + x)
+}
+
+fn must_find<T>(samples: &[u8], found: &BidiMap, pred: T) -> u8
+where
+    T: Fn(u8) -> bool,
+{
+    *samples
+        .iter()
+        .find(|&&s| !found.contains_key(s) && pred(s))
+        .unwrap()
 }
 
 fn subset(supers: u8, subs: u8) -> bool {
