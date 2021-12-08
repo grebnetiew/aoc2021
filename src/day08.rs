@@ -28,87 +28,98 @@ pub fn part2(input: &str) -> u32 {
         .sum()
 }
 
+struct BidiMap(HashMap<u8, u32>);
+
+impl BidiMap {
+    fn new() -> Self {
+        Self(HashMap::new())
+    }
+
+    fn insert(&mut self, k: u8, v: u32) {
+        self.0.insert(k, v);
+    }
+
+    fn get(&self, k: u8) -> Option<&u32> {
+        self.0.get(&k)
+    }
+
+    fn contains_key(&self, k: u8) -> bool {
+        self.0.contains_key(&k)
+    }
+
+    fn get_reverse(&self, needle: u32) -> Option<u8> {
+        self.0
+            .iter()
+            .find_map(|(&k, &v)| if v == needle { Some(k) } else { None })
+    }
+
+    fn must_get_reverse(&self, needle: u32) -> u8 {
+        self.get_reverse(needle).unwrap()
+    }
+}
+
 fn interpret_digits(samples: Vec<u8>, prompt: Vec<u8>) -> u32 {
-    let mut answers_f = HashMap::new();
-    let mut answers_r = HashMap::new();
+    let mut answers = BidiMap::new();
 
     // Find 1 4 7 8
     for s in &samples {
         match ones_count(*s) {
-            2 => {
-                answers_f.insert(s, 1);
-                answers_r.insert(1, s);
-            }
-            3 => {
-                answers_f.insert(s, 7);
-                answers_r.insert(7, s);
-            }
-            4 => {
-                answers_f.insert(s, 4);
-                answers_r.insert(4, s);
-            }
-            7 => {
-                answers_f.insert(s, 8);
-                answers_r.insert(8, s);
-            }
+            2 => answers.insert(*s, 1),
+            3 => answers.insert(*s, 7),
+            4 => answers.insert(*s, 4),
+            7 => answers.insert(*s, 8),
             _ => (),
         };
     }
 
     // Find 9: contains 4, included in 8, len 6
     if let Some(s) = samples.iter().find(|&s| {
-        !answers_f.contains_key(s)
+        !answers.contains_key(*s)
             && ones_count(*s) == 6
-            && subset(answers_r[&8], s)
-            && subset(s, answers_r[&4])
+            && subset(&answers.must_get_reverse(8), s)
+            && subset(s, &answers.must_get_reverse(4))
     }) {
-        answers_f.insert(s, 9);
-        answers_r.insert(9, s);
+        answers.insert(*s, 9);
     }
     // Find 0: contains 7, included in 8, len 6
     if let Some(s) = samples.iter().find(|&s| {
-        !answers_f.contains_key(s)
+        !answers.contains_key(*s)
             && ones_count(*s) == 6
-            && subset(answers_r[&8], s)
-            && subset(s, answers_r[&7])
+            && subset(&answers.must_get_reverse(8), s)
+            && subset(s, &answers.must_get_reverse(7))
     }) {
-        answers_f.insert(s, 0);
-        answers_r.insert(0, s);
+        answers.insert(*s, 0);
     }
     // Find 6: only remaining of len 6
     if let Some(s) = samples
         .iter()
-        .find(|&s| !answers_f.contains_key(s) && ones_count(*s) == 6)
+        .find(|&s| !answers.contains_key(*s) && ones_count(*s) == 6)
     {
-        answers_f.insert(s, 6);
-        answers_r.insert(6, s);
+        answers.insert(*s, 6);
     }
     // Find 5: included in 6
     if let Some(s) = samples
         .iter()
-        .find(|&s| !answers_f.contains_key(s) && subset(answers_r[&6], s))
+        .find(|&s| !answers.contains_key(*s) && subset(&answers.must_get_reverse(6), s))
     {
-        answers_f.insert(s, 5);
-        answers_r.insert(5, s);
+        answers.insert(*s, 5);
     }
     // Find 3: included in 9
     if let Some(s) = samples
         .iter()
-        .find(|&s| !answers_f.contains_key(s) && subset(answers_r[&9], s))
+        .find(|&s| !answers.contains_key(*s) && subset(&answers.must_get_reverse(9), s))
     {
-        answers_f.insert(s, 3);
-        answers_r.insert(3, s);
+        answers.insert(*s, 3);
     }
     // Find 2: only one left
-    if let Some(s) = samples.iter().find(|s| !answers_f.contains_key(s)) {
-        answers_f.insert(s, 2);
-        answers_r.insert(2, s);
+    if let Some(s) = samples.iter().find(|s| !answers.contains_key(**s)) {
+        answers.insert(*s, 2);
     }
 
     // Use answers to fill digits
     prompt
         .iter()
-        .map(|s| answers_f.get(s).expect("Answers incomplete"))
+        .map(|s| answers.get(*s).expect("Answers incomplete"))
         .fold(0, |acc, x| acc * 10 + x)
 }
 
