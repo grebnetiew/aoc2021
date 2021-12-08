@@ -62,57 +62,57 @@ fn interpret_digits(samples: Vec<u8>, prompt: Vec<u8>) -> u32 {
     let mut answers = BidiMap::new();
 
     // Find 1 4 7 8
-    for s in &samples {
-        match ones_count(*s) {
-            2 => answers.insert(*s, 1),
-            3 => answers.insert(*s, 7),
-            4 => answers.insert(*s, 4),
-            7 => answers.insert(*s, 8),
+    for &s in &samples {
+        match ones_count(s) {
+            2 => answers.insert(s, 1),
+            3 => answers.insert(s, 7),
+            4 => answers.insert(s, 4),
+            7 => answers.insert(s, 8),
             _ => (),
         };
     }
 
     // Find 9: contains 4, included in 8, len 6
-    if let Some(s) = samples.iter().find(|&s| {
-        !answers.contains_key(*s)
-            && ones_count(*s) == 6
-            && subset(&answers.must_get_reverse(8), s)
-            && subset(s, &answers.must_get_reverse(4))
+    if let Some(s) = samples.iter().find(|&&s| {
+        !answers.contains_key(s)
+            && ones_count(s) == 6
+            && subset(answers.must_get_reverse(8), s)
+            && subset(s, answers.must_get_reverse(4))
     }) {
         answers.insert(*s, 9);
     }
     // Find 0: contains 7, included in 8, len 6
-    if let Some(s) = samples.iter().find(|&s| {
-        !answers.contains_key(*s)
-            && ones_count(*s) == 6
-            && subset(&answers.must_get_reverse(8), s)
-            && subset(s, &answers.must_get_reverse(7))
+    if let Some(s) = samples.iter().find(|&&s| {
+        !answers.contains_key(s)
+            && ones_count(s) == 6
+            && subset(answers.must_get_reverse(8), s)
+            && subset(s, answers.must_get_reverse(7))
     }) {
         answers.insert(*s, 0);
     }
     // Find 6: only remaining of len 6
     if let Some(s) = samples
         .iter()
-        .find(|&s| !answers.contains_key(*s) && ones_count(*s) == 6)
+        .find(|&&s| !answers.contains_key(s) && ones_count(s) == 6)
     {
         answers.insert(*s, 6);
     }
     // Find 5: included in 6
     if let Some(s) = samples
         .iter()
-        .find(|&s| !answers.contains_key(*s) && subset(&answers.must_get_reverse(6), s))
+        .find(|&&s| !answers.contains_key(s) && subset(answers.must_get_reverse(6), s))
     {
         answers.insert(*s, 5);
     }
     // Find 3: included in 9
     if let Some(s) = samples
         .iter()
-        .find(|&s| !answers.contains_key(*s) && subset(&answers.must_get_reverse(9), s))
+        .find(|&&s| !answers.contains_key(s) && subset(answers.must_get_reverse(9), s))
     {
         answers.insert(*s, 3);
     }
     // Find 2: only one left
-    if let Some(s) = samples.iter().find(|s| !answers.contains_key(**s)) {
+    if let Some(s) = samples.iter().find(|&&s| !answers.contains_key(s)) {
         answers.insert(*s, 2);
     }
 
@@ -123,9 +123,9 @@ fn interpret_digits(samples: Vec<u8>, prompt: Vec<u8>) -> u32 {
         .fold(0, |acc, x| acc * 10 + x)
 }
 
-fn subset(supers: &u8, subs: &u8) -> bool {
+fn subset(supers: u8, subs: u8) -> bool {
     // a is a subset of b if and only if (a | b) == b
-    supers != subs && (supers | subs) == *supers
+    supers != subs && (supers | subs) == supers
 }
 
 fn str_to_bits(s: &str) -> u8 {
