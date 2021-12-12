@@ -17,7 +17,7 @@ pub fn part1(input: &(Vec<String>, Graph)) -> usize {
     // How many parts from the node named start to the node named end, noting
     // that a path may not visit a node with a lower case name more than once?
     let start = find(&input.0, "start").unwrap();
-    depth_first_search_end(&input.1, &input.0, &mut Vec::new(), start)
+    depth_first_search_end(&input.1, &input.0, &mut Vec::new(), false, start)
 }
 
 #[aoc(day12, part2)]
@@ -26,7 +26,7 @@ pub fn part2(input: &(Vec<String>, Graph)) -> usize {
     // that a path may not visit a node with a lower case name more than once,
     // except for one lower case node that may be visited twice?
     let start = find(&input.0, "start").unwrap();
-    depth_first_search_end_exception(&input.1, &input.0, &mut Vec::new(), start)
+    depth_first_search_end(&input.1, &input.0, &mut Vec::new(), true, start)
 }
 
 fn find_or_insert(v: &mut Vec<String>, element: &str) -> usize {
@@ -53,11 +53,14 @@ fn is_uppercase(s: &str) -> bool {
 }
 
 /// How many parts from the node named `from` to the node named end, noting
-/// that a path may not visit a node with a lower case name more than once?
+/// that a path may not visit a node with a lower case name more than once,
+/// except for one lower case node that may be visited twice if `exception`
+/// is true?
 fn depth_first_search_end(
     graph: &Graph,
     names: &[String],
     visited: &mut Vec<usize>,
+    exception: bool,
     source: usize,
 ) -> usize {
     let mut n_paths = 0;
@@ -66,34 +69,10 @@ fn depth_first_search_end(
         if names[i] == "end" {
             n_paths += 1;
         } else if is_uppercase(&names[i]) || !visited.contains(&i) {
-            n_paths += depth_first_search_end(graph, names, visited, i);
-        }
-    }
-    assert_eq!(visited.pop(), Some(source));
-    n_paths
-}
-
-/// How many parts from the node named `from` to the node named end, noting
-/// that a path may not visit a node with a lower case name more than once,
-/// except for one lower case node that may be visited twice?
-fn depth_first_search_end_exception(
-    graph: &Graph,
-    names: &[String],
-    visited: &mut Vec<usize>,
-    source: usize,
-) -> usize {
-    let mut n_paths = 0;
-    visited.push(source);
-    for i in graph.neighbors(source.into()).map(|i| i.index()) {
-        if names[i] == "end" {
-            n_paths += 1;
-        } else if is_uppercase(&names[i]) || !visited.contains(&i) {
-            n_paths += depth_first_search_end_exception(graph, names, visited, i);
-        } else if names[i] != "start" {
+            n_paths += depth_first_search_end(graph, names, visited, exception, i);
+        } else if exception && names[i] != "start" {
             // It is lowercase, and it was visited, but we haven't used the Special Exception yet!
-            // Use the algo from part 1, which will not make more exceptions, to search for "end"
-            // from this point onwards
-            n_paths += depth_first_search_end(graph, names, visited, i);
+            n_paths += depth_first_search_end(graph, names, visited, false, i);
         }
     }
     assert_eq!(visited.pop(), Some(source));
