@@ -83,14 +83,23 @@ fn depth_first_search_end(
 mod tests {
     use super::*;
 
-    const TEST_INPUT: &str = "start-A\nstart-b\nA-c\nA-b\nb-d\nA-end\nb-end";
+    const TEST_INPUT_1: &str = "start-A\nstart-b\nA-c\nA-b\nb-d\nA-end\nb-end";
+    const TEST_INPUT_2: &str = "dc-end\nHN-start\nstart-kj\ndc-start\ndc-HN\n\
+                                LN-dc\nHN-end\nkj-sa\nkj-HN\nkj-dc";
+    const TEST_INPUT_3: &str = "fs-end\nhe-DX\nfs-he\nstart-DX\npj-DX\nend-zg\n\
+                                zg-sl\nzg-pj\npj-he\nRW-he\nfs-DX\npj-RW\nzg-RW\n\
+                                start-pj\nhe-WI\nzg-he\npj-fs\nstart-RW";
 
     #[test]
     fn sample1() {
-        assert_eq!(part1(&parse_graph_edges(TEST_INPUT)), 10);
+        assert_eq!(part1(&parse_graph_edges(TEST_INPUT_1)), 10);
+        assert_eq!(part1(&parse_graph_edges(TEST_INPUT_2)), 19);
+        assert_eq!(part1(&parse_graph_edges(TEST_INPUT_3)), 226);
     }
     #[test]
     fn sample2() {
-        assert_eq!(part2(&parse_graph_edges(TEST_INPUT)), 36);
+        assert_eq!(part2(&parse_graph_edges(TEST_INPUT_1)), 36);
+        assert_eq!(part2(&parse_graph_edges(TEST_INPUT_2)), 103);
+        assert_eq!(part2(&parse_graph_edges(TEST_INPUT_3)), 3509);
     }
 }
