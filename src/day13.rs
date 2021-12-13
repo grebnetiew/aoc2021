@@ -98,7 +98,7 @@ fn display(grid: &[Vec<bool>], xmax: usize, ymax: usize) -> String {
         .map(|row| {
             row.iter()
                 .take(xmax)
-                .map(|b| if *b { '#' } else { '.' })
+                .map(|b| if *b { "##" } else { "  " })
                 .collect::<String>()
                 + "\n"
         })
@@ -140,7 +140,7 @@ fold along x=5";
     fn sample2() {
         assert_eq!(
             part2(&parse_points_and_folds(TEST_INPUT)),
-            "\n#####\n#...#\n#...#\n#...#\n#####\n.....\n.....\n"
+            "\n##########\n##      ##\n##      ##\n##      ##\n##########\n          \n          \n"
         );
     }
 }
