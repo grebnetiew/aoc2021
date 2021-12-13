@@ -29,22 +29,18 @@ pub fn part2(input: &(Vec<String>, Graph)) -> usize {
     depth_first_search_end(&input.1, &input.0, &mut Vec::new(), true, start)
 }
 
-fn find_or_insert(v: &mut Vec<String>, element: &str) -> usize {
-    v.iter()
-        .enumerate()
-        .find(|(_, elt)| element == **elt)
-        .map(|elt| elt.0)
-        .unwrap_or_else(|| {
-            v.push(element.into());
-            v.len() - 1
-        })
-}
-
 fn find(v: &[String], element: &str) -> Option<usize> {
     v.iter()
         .enumerate()
         .find(|(_, elt)| element == **elt)
         .map(|elt| elt.0)
+}
+
+fn find_or_insert(v: &mut Vec<String>, element: &str) -> usize {
+    find(v, element).unwrap_or_else(|| {
+        v.push(element.into());
+        v.len() - 1
+    })
 }
 
 /// Assumes we can just check the first character, and that the string isn't empty
