@@ -56,20 +56,18 @@ pub fn part2(input: &str) -> usize {
         polymer_pairs = transform_polymer_by_pairs(polymer_pairs, &transforms);
     }
 
-    // count occurrence of individual letters
+    // count occurrence of individual letters, only the second of each pair
+    // to avoid double counting
     let mut hist = HashMap::new();
     for (pair, freq) in polymer_pairs {
-        *hist.entry(pair.0).or_insert(0) += freq;
         *hist.entry(pair.1).or_insert(0) += freq;
     }
 
-    // we count everything twice except for the first and last letter
-    let polybytes = polymer.as_bytes();
-    *hist.entry(*polybytes.first().unwrap()).or_insert(0) += 1;
-    *hist.entry(*polybytes.last().unwrap()).or_insert(0) += 1;
+    // we still forgot the first letter
+    *hist.entry(polymer.as_bytes()[0]).or_insert(0) += 1;
 
-    let max = *hist.values().max().unwrap() / 2;
-    let min = *hist.values().min().unwrap() / 2;
+    let max = *hist.values().max().unwrap();
+    let min = *hist.values().min().unwrap();
     max - min
 }
 
