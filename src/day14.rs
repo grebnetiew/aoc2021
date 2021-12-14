@@ -26,9 +26,7 @@ pub fn part1(input: &str) -> usize {
         *hist.entry(ch).or_insert(0) += 1;
     }
 
-    let max = *hist.values().max().unwrap();
-    let min = *hist.values().min().unwrap();
-    max - min
+    *hist.values().max().unwrap() - *hist.values().min().unwrap()
 }
 
 fn transform_polymer(polymer: String, transforms: &HashMap<(u8, u8), u8>) -> String {
@@ -66,9 +64,7 @@ pub fn part2(input: &str) -> usize {
     // we still forgot the first letter
     *hist.entry(polymer.as_bytes()[0]).or_insert(0) += 1;
 
-    let max = *hist.values().max().unwrap();
-    let min = *hist.values().min().unwrap();
-    max - min
+    *hist.values().max().unwrap() - *hist.values().min().unwrap()
 }
 
 fn transform_polymer_by_pairs(
@@ -78,8 +74,8 @@ fn transform_polymer_by_pairs(
     let mut new_polymer = HashMap::new();
     for (pair, freq) in polymer {
         if let Some(ch) = transforms.get(&pair) {
-            *new_polymer.entry((pair.0, *ch as u8)).or_insert(0) += freq;
-            *new_polymer.entry((*ch as u8, pair.1)).or_insert(0) += freq;
+            *new_polymer.entry((pair.0, *ch)).or_insert(0) += freq;
+            *new_polymer.entry((*ch, pair.1)).or_insert(0) += freq;
         } else {
             new_polymer.insert(pair, freq);
         }
