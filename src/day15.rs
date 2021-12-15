@@ -1,5 +1,7 @@
 use pathfinding::directed::astar::astar;
 
+type Point = (usize, usize);
+
 #[aoc_generator(day15)]
 pub fn parse_number_grid(input: &str) -> Vec<Vec<u32>> {
     crate::day11::parse_number_grid(input)
@@ -32,11 +34,7 @@ pub fn part2(input: &[Vec<u32>]) -> Option<u32> {
 
 /// Returns the neighbours of `p` in the grid, along with the cost
 /// of moving from `p` to each neighbour
-fn neighbours(
-    grid: &[Vec<u32>],
-    p: (usize, usize),
-    max: (usize, usize),
-) -> Vec<((usize, usize), u32)> {
+fn neighbours(grid: &[Vec<u32>], p: Point, max: Point) -> Vec<(Point, u32)> {
     let mut res = Vec::new();
 
     if p.0 > 0 {
@@ -57,11 +55,7 @@ fn neighbours(
 
 /// Returns the neighbours of `p` in the modified grid, along with
 /// the cost of moving from `p` to each neighbour
-fn neighbours_times_five(
-    grid: &[Vec<u32>],
-    p: (usize, usize),
-    max: (usize, usize),
-) -> Vec<((usize, usize), u32)> {
+fn neighbours_times_five(grid: &[Vec<u32>], p: Point, max: Point) -> Vec<(Point, u32)> {
     let mut res = Vec::new();
 
     if p.0 > 0 {
@@ -84,18 +78,18 @@ fn neighbours_times_five(
 
 /// Returns the value of `p` in the grid extended to 25 times its size
 /// given the rules in the puzzle
-fn cost_times_five(grid: &[Vec<u32>], p: (usize, usize), max: (usize, usize)) -> u32 {
+fn cost_times_five(grid: &[Vec<u32>], p: Point, max: Point) -> u32 {
     let additional = p.0 / max.0 + p.1 / max.1;
     (grid[p.1 % max.1][p.0 % max.0] + additional as u32 - 1) % 9 + 1
 }
 
 /// Returns the manhattan distance between node `n` and the goal
-fn heuristic(n: (usize, usize), max: (usize, usize)) -> u32 {
+fn heuristic(n: Point, max: Point) -> u32 {
     (max.0 - n.0 + max.1 - n.1 - 2) as u32
 }
 
 /// Returns whether `n` is the goal node
-fn success(n: (usize, usize), max: (usize, usize)) -> bool {
+fn success(n: Point, max: Point) -> bool {
     max.0 == n.0 + 1 && max.1 == n.1 + 1
 }
 
