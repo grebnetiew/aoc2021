@@ -6,28 +6,28 @@ pub fn parse_number_grid(input: &str) -> Vec<Vec<u32>> {
 }
 
 #[aoc(day15, part1)]
-pub fn part1(input: &[Vec<u32>]) -> u32 {
+pub fn part1(input: &[Vec<u32>]) -> Option<u32> {
     let max = (input[0].len(), input.len());
-    let path = astar(
+    astar(
         &(0, 0),
         |&p| neighbours(input, p, max),
         |&p| heuristic(p, max),
         |&p| success(p, max),
-    );
-    path.unwrap().1
+    )
+    .map(|(_path, cost)| cost)
 }
 
 #[aoc(day15, part2)]
-pub fn part2(input: &[Vec<u32>]) -> u32 {
+pub fn part2(input: &[Vec<u32>]) -> Option<u32> {
     let max = (input[0].len(), input.len());
     let max_five = (input[0].len() * 5, input.len() * 5);
-    let path = astar(
+    astar(
         &(0, 0),
         |&p| neighbours_times_five(input, p, max),
         |&p| heuristic(p, max_five),
         |&p| success(p, max_five),
-    );
-    path.unwrap().1
+    )
+    .map(|(_path, cost)| cost)
 }
 
 fn neighbours(
@@ -108,10 +108,10 @@ mod tests {
 
     #[test]
     fn sample1() {
-        assert_eq!(part1(&parse_number_grid(TEST_INPUT)), 40);
+        assert_eq!(part1(&parse_number_grid(TEST_INPUT)), Some(40));
     }
     #[test]
     fn sample2() {
-        assert_eq!(part2(&parse_number_grid(TEST_INPUT)), 315);
+        assert_eq!(part2(&parse_number_grid(TEST_INPUT)), Some(315));
     }
 }
