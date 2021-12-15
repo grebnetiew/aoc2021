@@ -30,63 +30,71 @@ pub fn part2(input: &[Vec<u32>]) -> Option<u32> {
     .map(|(_path, cost)| cost)
 }
 
+/// Returns the neighbours of `p` in the grid, along with the cost
+/// of moving from `p` to each neighbour
 fn neighbours(
     grid: &[Vec<u32>],
     p: (usize, usize),
     max: (usize, usize),
 ) -> Vec<((usize, usize), u32)> {
     let mut res = Vec::new();
+
     if p.0 > 0 {
-        res.push(((p.0 - 1, p.1), grid[p.1][p.0 - 1]));
+        res.push((p.0 - 1, p.1));
     }
-
     if p.1 > 0 {
-        res.push(((p.0, p.1 - 1), grid[p.1 - 1][p.0]));
+        res.push((p.0, p.1 - 1));
     }
-
     if p.1 < max.1 - 1 {
-        res.push(((p.0, p.1 + 1), grid[p.1 + 1][p.0]));
+        res.push((p.0, p.1 + 1));
+    }
+    if p.0 < max.0 - 1 {
+        res.push((p.0 + 1, p.1));
     }
 
-    if p.0 < max.0 - 1 {
-        res.push(((p.0 + 1, p.1), grid[p.1][p.0 + 1]));
-    }
-    res
+    res.into_iter().map(|p| (p, grid[p.1][p.0])).collect()
 }
 
+/// Returns the neighbours of `p` in the modified grid, along with
+/// the cost of moving from `p` to each neighbour
 fn neighbours_times_five(
     grid: &[Vec<u32>],
     p: (usize, usize),
     max: (usize, usize),
 ) -> Vec<((usize, usize), u32)> {
     let mut res = Vec::new();
+
     if p.0 > 0 {
-        res.push(((p.0 - 1, p.1), grid_times_five(grid, (p.0 - 1, p.1), max)));
+        res.push((p.0 - 1, p.1));
     }
-
     if p.1 > 0 {
-        res.push(((p.0, p.1 - 1), grid_times_five(grid, (p.0, p.1 - 1), max)));
+        res.push((p.0, p.1 - 1));
     }
-
     if p.1 < max.1 * 5 - 1 {
-        res.push(((p.0, p.1 + 1), grid_times_five(grid, (p.0, p.1 + 1), max)));
+        res.push((p.0, p.1 + 1));
+    }
+    if p.0 < max.0 * 5 - 1 {
+        res.push((p.0 + 1, p.1));
     }
 
-    if p.0 < max.0 * 5 - 1 {
-        res.push(((p.0 + 1, p.1), grid_times_five(grid, (p.0 + 1, p.1), max)));
-    }
-    res
+    res.into_iter()
+        .map(|p| (p, cost_times_five(grid, p, max)))
+        .collect()
 }
 
-fn grid_times_five(grid: &[Vec<u32>], p: (usize, usize), max: (usize, usize)) -> u32 {
+/// Returns the value of `p` in the grid extended to 25 times its size
+/// given the rules in the puzzle
+fn cost_times_five(grid: &[Vec<u32>], p: (usize, usize), max: (usize, usize)) -> u32 {
     let additional = p.0 / max.0 + p.1 / max.1;
     (grid[p.1 % max.1][p.0 % max.0] + additional as u32 - 1) % 9 + 1
 }
 
+/// Returns the manhattan distance between node `n` and the goal
 fn heuristic(n: (usize, usize), max: (usize, usize)) -> u32 {
     (max.0 - n.0 + max.1 - n.1 - 2) as u32
 }
 
+/// Returns whether `n` is the goal node
 fn success(n: (usize, usize), max: (usize, usize)) -> bool {
     max.0 == n.0 + 1 && max.1 == n.1 + 1
 }
