@@ -1,5 +1,7 @@
+#[derive(Debug, Clone)]
 struct Packet {
     version: u32,
+    op_type: u32,
     contents: PacketContents,
 }
 
@@ -8,7 +10,7 @@ impl Packet {
         self.version as u32
             + match &self.contents {
                 PacketContents::Literal(_) => 0,
-                PacketContents::Operator { packets, .. } => {
+                PacketContents::SubPackets(packets) => {
                     packets.iter().map(Packet::version_sum).sum::<u32>()
                 }
             }
@@ -17,18 +19,25 @@ impl Packet {
     fn parse(input: &[u8]) -> (Self, usize) {
         let mut it = input.iter().copied();
         let version = bin_to_u64(&mut it, 3) as u32;
-        let type_id = bin_to_u64(&mut it, 3);
-        let (contents, sz) = match type_id {
+        let op_type = bin_to_u64(&mut it, 3) as u32;
+        let (contents, sz) = match op_type {
             4 => PacketContents::parse_literal(&input[6..]),
-            _ => PacketContents::parse_operator(type_id, &input[6..]),
+            _ => PacketContents::parse_operator(&input[6..]),
         };
-        (Self { version, contents }, sz + 6)
+        (
+            Self {
+                version,
+                op_type,
+                contents,
+            },
+            sz + 6,
+        )
     }
 
     fn value(&self) -> u64 {
         match &self.contents {
             PacketContents::Literal(v) => *v,
-            PacketContents::Operator { op_type, packets } => match op_type {
+            PacketContents::SubPackets(packets) => match self.op_type {
                 0 => packets.iter().map(Packet::value).sum(),
                 1 => packets.iter().map(Packet::value).product(),
                 2 => packets.iter().map(Packet::value).min().unwrap(),
@@ -54,15 +63,16 @@ impl Packet {
                         0
                     }
                 }
-                _ => panic!("invalid operator type {}", op_type),
+                _ => panic!("invalid operator type {}", self.op_type),
             },
         }
     }
 }
 
+#[derive(Debug, Clone)]
 enum PacketContents {
     Literal(u64),
-    Operator { op_type: u64, packets: Vec<Packet> },
+    SubPackets(Vec<Packet>),
 }
 
 impl PacketContents {
@@ -78,31 +88,29 @@ impl PacketContents {
         }
         (PacketContents::Literal(value), read)
     }
-    fn parse_operator(op_type: u64, input: &[u8]) -> (Self, usize) {
+    fn parse_operator(input: &[u8]) -> (Self, usize) {
         let mut it = input.iter().copied();
         let length_type = bin_to_u64(&mut it, 1);
+        let mut packets = Vec::new();
+        let mut cursor = 0;
         if length_type == 0 {
             let length = bin_to_u64(&mut it, 15) as usize;
-            let mut cursor = 0;
-            let mut packets = Vec::new();
-            while cursor < length {
-                let (new_packet, parsed_length) = Packet::parse(&input[cursor + 16..]);
+            cursor += 16;
+            while cursor < length + 16 {
+                let (new_packet, parsed_length) = Packet::parse(&input[cursor..]);
                 packets.push(new_packet);
                 cursor += parsed_length;
             }
-            // a well-formed packet would have cursor == length, but let's not assume
-            (PacketContents::Operator { op_type, packets }, length + 16)
         } else {
             let amount = bin_to_u64(&mut it, 11) as usize;
-            let mut cursor = 0;
-            let mut packets = Vec::new();
+            cursor += 12;
             while packets.len() < amount {
-                let (new_packet, parsed_length) = Packet::parse(&input[cursor + 12..]);
+                let (new_packet, parsed_length) = Packet::parse(&input[cursor..]);
                 packets.push(new_packet);
                 cursor += parsed_length;
             }
-            (PacketContents::Operator { op_type, packets }, cursor + 12)
         }
+        (PacketContents::SubPackets(packets), cursor)
     }
 }
 
