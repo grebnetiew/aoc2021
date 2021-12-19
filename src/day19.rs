@@ -17,20 +17,19 @@ pub fn parse_scanners(input: &str) -> Vec<Vec<Point3D>> {
                 p.next().map(str::parse).unwrap().unwrap(),
                 p.next().map(str::parse).unwrap().unwrap(),
             ]));
-            println!("{:?}", scanners.last().unwrap().last().unwrap());
         }
     }
-    println!("{:?}", scanners.iter().flatten().count());
     scanners
 }
 
 #[aoc(day19, part1)]
 pub fn part1(input: &[Vec<Point3D>]) -> usize {
     let mut input = input.to_owned();
-    let mut reference = input.pop().unwrap();
+    let mut reference = input.swap_remove(0);
     while !input.is_empty() {
         let mut ok = false;
         for i in 0..input.len() {
+            println!("checking old{} and {}", 0, i);
             if let Some((rot, vec)) = has_overlap_rot(&reference, &input[i]) {
                 let transformed: Vec<_> = input
                     .swap_remove(i)
@@ -50,6 +49,7 @@ pub fn part1(input: &[Vec<Point3D>]) -> usize {
             panic!("will not converge");
         }
     }
+    println!("{:?}", reference);
     reference.len()
 }
 
@@ -66,11 +66,10 @@ fn has_overlap(reference: &[Point3D], candidate: &[Point3D]) -> Option<Vector3D>
         let v = *can - reference[0];
         let overlaps = reference
             .iter()
-            .skip(1)
             .filter(|&p| candidate.contains(&(*p + v)))
             .count();
         if overlaps >= 12 {
-            return Some(v);
+            return Some(-v);
         }
     }
     None
@@ -267,6 +266,34 @@ mod tests {
 -652,-548,-490
 30,-46,-14";
 
+    const SHORTER_TEST: &str = "--- scanner 0 ---
+-618,-824,-621
+-537,-823,-458
+-447,-329,318
+404,-588,-901
+544,-627,-890
+528,-643,409
+-661,-816,-575
+390,-675,-793
+423,-701,434
+-345,-311,381
+459,-707,401
+-485,-357,347
+
+--- scanner 1 ---
+686,422,578
+605,423,415
+515,917,-361
+-336,658,858
+-476,619,847
+-460,603,-452
+729,430,532
+-322,571,750
+-355,545,-477
+413,935,-424
+-391,539,-444
+553,889,-390";
+
     #[test]
     fn rotations() {
         let (r000, _r090, r180, _r270) = (
@@ -298,13 +325,23 @@ mod tests {
             has_overlap_rot(&pts, &pts1),
             Some((
                 Rotation3D::euler(r180, r000, r000),
-                Vector3D::from((1, 1, 1))
+                Vector3D::from((-1, -1, -1))
             ))
         );
     }
+
     #[test]
     fn sample1() {
         assert_eq!(part1(&parse_scanners(TEST_INPUT)), 79);
+    }
+    #[test]
+    fn sample1a() {
+        let input = parse_scanners(SHORTER_TEST);
+        assert!(has_overlap_rot(&input[0], &input[1]).is_some());
+    }
+    #[test]
+    fn sample1b() {
+        assert_eq!(part1(&parse_scanners(SHORTER_TEST)), 12);
     }
     #[test]
     fn sample2() {
