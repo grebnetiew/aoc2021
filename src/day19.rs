@@ -25,11 +25,10 @@ pub fn parse_scanners(input: &str) -> Vec<Vec<Point3D>> {
 #[aoc(day19, part1)]
 pub fn part1(input: &[Vec<Point3D>]) -> usize {
     let mut input = input.to_owned();
-    let mut reference = input.swap_remove(0);
+    let mut reference = input.remove(0);
     while !input.is_empty() {
         let mut ok = false;
         for i in 0..input.len() {
-            println!("checking old{} and {}", 0, i);
             if let Some((rot, vec)) = has_overlap_rot(&reference, &input[i]) {
                 let transformed: Vec<_> = input
                     .swap_remove(i)
@@ -41,7 +40,6 @@ pub fn part1(input: &[Vec<Point3D>]) -> usize {
                     .sort_unstable_by(|a, b| a.x.cmp(&b.x).then(a.y.cmp(&b.y)).then(a.z.cmp(&b.z)));
                 reference.dedup();
                 ok = true;
-                println!("success..");
                 break;
             }
         }
@@ -49,13 +47,44 @@ pub fn part1(input: &[Vec<Point3D>]) -> usize {
             panic!("will not converge");
         }
     }
-    println!("{:?}", reference);
     reference.len()
 }
 
 #[aoc(day19, part2)]
-pub fn part2(input: &[Vec<Point3D>]) -> u64 {
-    0
+pub fn part2(input: &[Vec<Point3D>]) -> i32 {
+    // Maximum manhattan distance between sensors
+    let mut input = input.to_owned();
+    let mut scanner_pos = Vec::new();
+    let mut reference = input.remove(0);
+    while !input.is_empty() {
+        for i in 0..input.len() {
+            if let Some((rot, vec)) = has_overlap_rot(&reference, &input[i]) {
+                scanner_pos.push(vec);
+                let transformed: Vec<_> = input
+                    .swap_remove(i)
+                    .iter()
+                    .map(|p| rot.transform_point3d(p.cast()).round().cast() + vec)
+                    .collect();
+                reference.extend_from_slice(&transformed);
+                reference
+                    .sort_unstable_by(|a, b| a.x.cmp(&b.x).then(a.y.cmp(&b.y)).then(a.z.cmp(&b.z)));
+                reference.dedup();
+                break;
+            }
+        }
+    }
+
+    (0..scanner_pos.len())
+        .flat_map(|i| (0..scanner_pos.len()).map(move |j| (i, j)))
+        .map(|(i, j)| {
+            (scanner_pos[i] - scanner_pos[j])
+                .abs()
+                .to_array()
+                .iter()
+                .sum()
+        })
+        .max()
+        .unwrap()
 }
 
 /// Brute forces all differences between points to see if at least 12 points
@@ -63,13 +92,15 @@ pub fn part2(input: &[Vec<Point3D>]) -> u64 {
 /// coordinate system. Does not take rotations into account.
 fn has_overlap(reference: &[Point3D], candidate: &[Point3D]) -> Option<Vector3D> {
     for can in candidate {
-        let v = *can - reference[0];
-        let overlaps = reference
-            .iter()
-            .filter(|&p| candidate.contains(&(*p + v)))
-            .count();
-        if overlaps >= 12 {
-            return Some(-v);
+        for i in 0..reference.len() {
+            let v = *can - reference[i];
+            let overlaps = reference
+                .iter()
+                .filter(|&p| candidate.contains(&(*p + v)))
+                .count();
+            if overlaps >= 12 {
+                return Some(-v);
+            }
         }
     }
     None
@@ -345,6 +376,6 @@ mod tests {
     }
     #[test]
     fn sample2() {
-        //  assert_eq!(part2(&parse_scanners(TEST_INPUT)), 3993);
+        assert_eq!(part2(&parse_scanners(TEST_INPUT)), 3621);
     }
 }
